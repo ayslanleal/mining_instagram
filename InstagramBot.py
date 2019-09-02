@@ -5,24 +5,32 @@ from re import sub #Função para trabalhar com strings
 import os #Módulo que traz informações sobre o sistema operacional e permite manipular diretórios
 import json #Módulo com funções para trabalhar com arquivos json
 
-def get_tag(tag_name):        
+def get_tag(tag_name, qtd):        
         driver = openFirefox() 
         search(driver, 'explore/tags/'+tag_name) #passando 'explore/tags' pois a função get_tag() pesquisa apenas por tags, caso fosse usuário, passaríamos apenas o nome do mesmo. 
+        sleep(3)
         header_info = get_header_info(driver)
         if header_info!=None:
-                qtdPosts = sub('[,posts]','',header_info['Posts']) #Pega a quantidade de posts coletada e remove as vírgulas e a palavra 'posts' da string para que possa ser convertida em inteiro.
-                time=1 #Intervalo entra uma publicação e outra.
-                if int(qtdPosts)>=400000: #Caso o número de posts seja maior que 400.000, o intervalo aumenta, pois o tempo de carregamento da página é maior.
-                        time=1.5
+                qtdPosts = int(sub('[,posts]','',header_info['Posts'])) #Pega a quantidade de posts coletada e remove as vírgulas e a palavra 'posts' da string para que possa ser convertida em inteiro.
+                time=200
+                if qtdPosts<qtd: #Verifica se a quantidade passada como parâmetro é válida, pois se uma tag tiver 50 publicações e a quantidade passada por parâmetro for 100, ocorrerá um erro
+                        qtd=qtdPosts
                 lista_pubs = []
-                sleep(3)
                 click = click_navigation(driver)
                 sleep(2)
-                for i in range(0,20):
-                        sleep(time)
-                        lista_pubs.append(get_post_info(driver))
+                for i in range(0,qtd):
+                        while time>=0: 
+                                try:    #O while executa o número de vezes necessário para que os dados da publicação sejam coletados
+                                        lista_pubs.append(get_post_info(driver))      
+                                        break
+                                except:
+                                        time-=1 #A variável time é subtraída de 1 em 1, se chegar em zero, significa que o laço while já executou 200 vezes e não conseguiu coletar os dados da publicação, o que quer dizer que ela não está carregando, então o programa deve parar.
+                                        continue #"continue" faz voltar para o "try:"
+                        if time<0: 
+                                print("Falha no carregamento.")
+                                break
+                        time=200  
                         click.click()
-                        
                 lista_salvar = [header_info]
                 dict_salvar = {'Tag Informations':lista_salvar, 'Posts':lista_pubs}
                 save(dict_salvar, tag_name) #Salva resultados encontrados
@@ -58,19 +66,31 @@ def get_post_info(driver):
                         #Caso o try de cima falhe, significa que a publicação ainda não possui nenhum like, então, ela recebe 0.
                         info_pubs_photo['Likes']='0'
                         pass #Continua para as próximas buscas.
-                info_pubs_photo['Caption'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'P9YgZ'}).find('span').text
-                info_pubs_photo['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'P9YgZ'}).find('h2', {'class':'_6lAjh'}).find('a').get('title')
+                try:
+                        info_pubs_photo['Caption'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'P9YgZ'}).find('span').text
+                except:
+                        info_pubs_photo['Caption'] ='No Caption'
+                        pass
+                info_pubs_photo['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'e1e1d'}).find('h2', {'class':'BrX75'}).find('a').get('title')
                 info_pubs_photo['UserUrl'] = 'https://www.instagram.com/'+info_pubs_photo['UserName']
                 info_pubs_photo['Content'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img', {'class':'FFVAD'}).get('alt')
                 info_pubs_photo['ImgUrl'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img').get('src')
                 return info_pubs_photo
         except: 
                 #Publicações em vídeo
-                #Caso a busca acima falhe, significa que o tipo de publicação que está sendo análisada é um vídeo, então o nome das classes e tags html será como a seguir:
+                #Caso a busca acima falhe, significa que o tipo de publicação que está sendo analisada é um vídeo, então o nome das classes e tags html será como a seguir:
                 info_pubs_video={'UserName':'','UserUrl':'','Views':'','VideoUrl':'','Caption':''} #Dicionário que guarda informações de vídeo
-                info_pubs_video['Views'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'HbPOm _9Ytll'}).find('span').text
-                info_pubs_video['Caption'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'P9YgZ'}).find('span').text
-                info_pubs_video['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'P9YgZ'}).find('h2', {'class':'_6lAjh'}).find('a').get('title')
+                try:
+                        info_pubs_video['Views'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'HbPOm _9Ytll'}).find('span').text
+                except:
+                        info_pubs_video['Views']='0'
+                        pass
+                try:
+                        info_pubs_video['Caption'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'P9YgZ'}).find('span').text
+                except:
+                        info_pubs_video['Caption'] = 'No Caption'
+                        pass
+                info_pubs_video['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'e1e1d'}).find('h2', {'class':'BrX75'}).find('a').get('title')
                 info_pubs_video['UserUrl'] = 'https://www.instagram.com/'+info_pubs_video['UserName']
                 info_pubs_video['VideoUrl'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'_5wCQW'}).find('video').get('src')
                 return info_pubs_video
