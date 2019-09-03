@@ -59,6 +59,7 @@ def get_post_info(driver):
         try:
                 #Publicações em foto
                 info_pubs_photo={'UserName':'','UserUrl':'','Location':'','Likes':'','Content':'','ImgUrl':'','Caption':''} #Dicionário que guarda informações de foto
+                info_pubs_photo['ImgUrl']=None
                 try:
                         #Verifica se há algum like, do contrário, ele não encontrará nada e retornará um erro.
                         info_pubs_photo['Likes'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'Nm9Fw'}).find('span').text
@@ -79,7 +80,8 @@ def get_post_info(driver):
                 info_pubs_photo['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'e1e1d'}).find('h2', {'class':'BrX75'}).find('a').get('title')
                 info_pubs_photo['UserUrl'] = 'https://www.instagram.com/'+info_pubs_photo['UserName']
                 info_pubs_photo['Content'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img', {'class':'FFVAD'}).get('alt')
-                info_pubs_photo['ImgUrl'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img').get('src')
+                while info_pubs_photo['ImgUrl']==None:
+                        info_pubs_photo['ImgUrl'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img', {'class':'FFVAD'}).get('src')
                 return info_pubs_photo
         except: 
                 #Publicações em vídeo
