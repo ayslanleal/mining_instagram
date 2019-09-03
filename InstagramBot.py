@@ -58,7 +58,7 @@ def get_post_info(driver):
         bs_obj = bs(driver.page_source, 'html.parser')
         try:
                 #Publicações em foto
-                info_pubs_photo={'UserName':'','UserUrl':'','Likes':'','Content':'','ImgUrl':'','Caption':''} #Dicionário que guarda informações de foto
+                info_pubs_photo={'UserName':'','UserUrl':'','Location':'','Likes':'','Content':'','ImgUrl':'','Caption':''} #Dicionário que guarda informações de foto
                 try:
                         #Verifica se há algum like, do contrário, ele não encontrará nada e retornará um erro.
                         info_pubs_photo['Likes'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'Nm9Fw'}).find('span').text
@@ -71,6 +71,11 @@ def get_post_info(driver):
                 except:
                         info_pubs_photo['Caption'] ='No Caption'
                         pass
+                try:
+                        info_pubs_photo['Location'] = bs_obj.find('div',{'class':'JF9hh'}).find('a').text
+                except:
+                        info_pubs_photo['Location'] = 'No location available'
+                        pass
                 info_pubs_photo['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'e1e1d'}).find('h2', {'class':'BrX75'}).find('a').get('title')
                 info_pubs_photo['UserUrl'] = 'https://www.instagram.com/'+info_pubs_photo['UserName']
                 info_pubs_photo['Content'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'KL4Bh'}).find('img', {'class':'FFVAD'}).get('alt')
@@ -79,7 +84,7 @@ def get_post_info(driver):
         except: 
                 #Publicações em vídeo
                 #Caso a busca acima falhe, significa que o tipo de publicação que está sendo analisada é um vídeo, então o nome das classes e tags html será como a seguir:
-                info_pubs_video={'UserName':'','UserUrl':'','Views':'','VideoUrl':'','Caption':''} #Dicionário que guarda informações de vídeo
+                info_pubs_video={'UserName':'','UserUrl':'','Location':'','Views':'','VideoUrl':'','Caption':''} #Dicionário que guarda informações de vídeo
                 try:
                         info_pubs_video['Views'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'HbPOm _9Ytll'}).find('span').text
                 except:
@@ -89,6 +94,11 @@ def get_post_info(driver):
                         info_pubs_video['Caption'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div', {'class':'P9YgZ'}).find('span').text
                 except:
                         info_pubs_video['Caption'] = 'No Caption'
+                        pass
+                try:    
+                        info_pubs_video['Location'] = bs_obj.find('div',{'class':'JF9hh'}).find('a').text
+                except:
+                        info_pubs_video['Location'] = 'No location available'
                         pass
                 info_pubs_video['UserName'] = bs_obj.find('div',{'class':'PdwC2 _6oveC Z_y-9'}).find('div',{'class':'e1e1d'}).find('h2', {'class':'BrX75'}).find('a').get('title')
                 info_pubs_video['UserUrl'] = 'https://www.instagram.com/'+info_pubs_video['UserName']
