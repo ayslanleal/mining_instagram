@@ -1,3 +1,5 @@
 import InstagramBot
 
-InstagramBot.get_tag(input("Informe a Tag: "), int(input("Informe a quantidade de publicações: ")))
+InstagramBot.get_posts(input("Informe o nome do usuário ou #: "), int(input("Informe a quantidade de publicações: ")))
+
+#Resolver problema da Url do usuário nos dicts das publicações.
