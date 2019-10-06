@@ -69,7 +69,7 @@ def get_header_user(driver,userName):
                 bs_obj = bs_obj.find('ul',{'class':'k9GMp '})
                 bs_obj = bs_obj.findAll('a', {'class':'-nal3 '})
                 header_info['User'] = userName
-                header_info['UserUrl'] = 'https://www.instagram.com/'+header_info['UserName']
+                header_info['UserUrl'] = 'https://www.instagram.com/'+header_info['User']
                 header_info['Posts'] = bs_obj[0].text
                 header_info['Followers'] = bs_obj[1].text
                 header_info['Following'] = bs_obj[2].text
