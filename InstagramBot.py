@@ -5,6 +5,10 @@ from re import sub #Função para trabalhar com strings
 from os import path
 from os import mkdir #Módulo que traz informações sobre o sistema operacional e permite manipular diretórios
 from json import dumps #Módulo com funções para trabalhar com arquivos json
+from pymongo import MongoClient
+
+client = MongoClient("localhost", 27017)
+db = client.tags
 
 def get_posts(name, qtd):        
         driver = openFirefox() 
@@ -43,6 +47,7 @@ def get_posts(name, qtd):
                         click.click()
                 dict_ = {tipo:header_info,'Posts':lista_pubs}
                 save(dict_, name) #Salva resultados encontrados
+                get_bd(db, name, dict_)
                 driver.close()
                 print("%d Publicações coletadas."%(len(lista_pubs)))
         else:   
@@ -160,3 +165,8 @@ def save(dictionary, fileName): #Função que rebe um dicionário e o nome que s
         file = open("./Tags_Info/%s.json"%(fileName), 'w') #Cria arquivo .json com o nome passado como parâmetro 
         file.write(dictionary) #Armazena as informações no arquivo que foi criado
         file.close() 
+
+def get_bd(database, name, dictionary):
+        database.name.insert_one([
+                {"json": dictionary}
+        ])
