@@ -46,7 +46,7 @@ def get_posts(name, qtd):
                         time=200  
                         click.click()
                 dict_ = {tipo:header_info,'Posts':lista_pubs}
-                save(dict_, name) #Salva resultados encontrados
+                #save(dict_, name) #Salva resultados encontrados
                 get_bd(db, name, dict_)
                 driver.close()
                 print("%d Publicações coletadas."%(len(lista_pubs)))
@@ -167,6 +167,6 @@ def save(dictionary, fileName): #Função que rebe um dicionário e o nome que s
         file.close() 
 
 def get_bd(database, name, dictionary):
-        database.name.insert_one([
-                {"json": dictionary}
-        ])
+        dictionary = dumps(dictionary, indent=4, sort_keys=False, ensure_ascii=False)
+        posts = dictionary['Posts']
+        database.name.insert_many(posts)
